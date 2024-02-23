@@ -23,6 +23,11 @@
     },
     "ios": {
       "bundleIdentifier": "com.douglowderexpo.VideoTest"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "31d5dae7-d5dc-4d13-ade5-d31f54234c21"
+      }
     }
   }
 }
