@@ -17,6 +17,12 @@
       ]
     ],
     "name": "VideoTest",
-    "slug": "VideoTest"
+    "slug": "VideoTest",
+    "android": {
+      "package": "com.douglowderexpo.VideoTest"
+    },
+    "ios": {
+      "bundleIdentifier": "com.douglowderexpo.VideoTest"
+    }
   }
 }
