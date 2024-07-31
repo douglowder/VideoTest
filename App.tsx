@@ -1,121 +1,94 @@
-import { useVideoPlayer, VideoView, VideoPlayerStatus } from 'expo-video';
-import { useEffect, useRef, useState } from 'react';
-import {
-  Dimensions,
-  Platform,
-  StyleSheet,
-  Text,
-  View,
-  Pressable,
-} from 'react-native';
+import { Video, ResizeMode, AVPlaybackStatus } from 'expo-av';
+import { useRef, useState } from 'react';
+import { StyleSheet, Text, View, Pressable } from 'react-native';
 import { useScale } from './useScale';
-import { useInterval } from './useInterval';
+
+type Status = Partial<AVPlaybackStatus> & {
+  isPlaying?: boolean;
+  uri?: string;
+  rate?: number;
+  positionMillis?: number;
+  playableDurationMillis?: number;
+};
 
 const videoSource =
   'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
 
 export default function App() {
   const styles = useVideoStyles();
-  const ref = useRef<VideoView>();
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [videoStatus, setVideoStatus] = useState<VideoPlayerStatus>('idle');
+  const video = useRef<Video>();
+  const [videoStatus, setVideoStatus] = useState<Status>({
+    isPlaying: false,
+  });
   const [fractionComplete, setFractionComplete] = useState(0);
 
-  const fractionCompleteFromPosition = (
-    position: number | undefined,
-    duration: number | undefined,
-  ) => {
-    return duration !== undefined ? (position ?? 0) / duration : 0;
-  };
-
-  const player = useVideoPlayer(videoSource, (player) => {
-    player.addListener('statusChange', (status) => {
-      setVideoStatus(status);
-      console.log(`video status = ${status}`);
-    });
-  });
-
-  useEffect(() => {
-    if (player.playing) {
-      setIsPlaying(true);
-    } else {
-      setIsPlaying(false);
-    }
-  }, [player.playing]);
-
-  useEffect(() => {
-    if (videoStatus === 'readyToPlay') {
-      // Autoplay on start
-      player.play();
-    }
-  }, [videoStatus]);
-
-  useInterval(() => {
-    setFractionComplete(
-      fractionCompleteFromPosition(player.currentTime, player.duration),
-    );
-  }, 1000);
+  const fractionCompleteFromStatus = (status: Status) =>
+    status.playableDurationMillis !== undefined &&
+    status.positionMillis !== undefined
+      ? status.positionMillis / status.playableDurationMillis
+      : 0;
 
   return (
     <View style={styles.container}>
-      {videoStatus === 'readyToPlay' || Platform.OS === 'android' ? (
-        <VideoView
-          ref={ref}
-          style={styles.videoStyle}
-          player={player}
-          nativeControls
-          contentFit="fill"
-          showsTimecodes
-          allowsFullscreen
-          allowsPictureInPicture
-          contentPosition={{ dx: 0, dy: 0 }}
-        />
-      ) : (
-        <View style={styles.videoStyle} />
-      )}
+      <Video
+        ref={video}
+        style={styles.videoStyle}
+        source={{
+          uri: videoSource,
+        }}
+        useNativeControls
+        resizeMode={ResizeMode.STRETCH}
+        isLooping
+        onPlaybackStatusUpdate={(status) => {
+          setVideoStatus(status);
+          setFractionComplete(fractionCompleteFromStatus(status));
+        }}
+      />
       <ProgressBar fractionComplete={fractionComplete} />
       <View style={styles.buttons}>
         <Button
           title="Rewind"
           onPress={() => {
-            player.currentTime = 0;
-            setFractionComplete(
-              fractionCompleteFromPosition(player.currentTime, player.duration),
-            );
+            video.current.setPositionAsync(0);
           }}
-        />
+        />{' '}
         <Button
           title="Back 5 sec"
           onPress={() => {
-            player.seekBy(-5);
-            setFractionComplete(
-              fractionCompleteFromPosition(player.currentTime, player.duration),
-            );
-          }}
-        />
-        <Button
-          title={isPlaying ? 'Pause' : 'Play'}
-          onPress={() => {
-            if (player.playing) {
-              player.pause();
+            if (videoStatus.positionMillis > 5000) {
+              video.current.setPositionAsync(videoStatus.positionMillis - 5000);
             } else {
-              player.play();
+              video.current.setPositionAsync(0);
             }
           }}
         />
         <Button
+          title={videoStatus.isPlaying ? 'Pause' : 'Play'}
+          onPress={() =>
+            videoStatus?.isPlaying ?? false
+              ? video.current.pauseAsync()
+              : video.current.playAsync()
+          }
+        />
+        <Button
           title="Forward 5 sec"
           onPress={() => {
-            player.seekBy(5);
-            setFractionComplete(
-              fractionCompleteFromPosition(player.currentTime, player.duration),
-            );
+            if (
+              videoStatus.positionMillis <
+              videoStatus.playableDurationMillis - 5000
+            ) {
+              video.current.setPositionAsync(videoStatus.positionMillis + 5000);
+            } else {
+              video.current.setPositionAsync(
+                videoStatus.playableDurationMillis,
+              );
+            }
           }}
         />
         <Button
           title="Full screen"
           onPress={() => {
-            ref.current.enterFullscreen();
+            video.current.presentFullscreenPlayer();
           }}
         />
       </View>
