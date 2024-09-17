@@ -29,8 +29,8 @@ export default function App() {
 
   const videoStyle: ViewStyle = {
     alignSelf: 'center',
-    width,
-    height: height * 0.8,
+    width: width * 0.8,
+    height: width * 0.3,
   };
 
   const fractionCompleteFromStatus = (status: Status) =>
@@ -121,7 +121,7 @@ const Button = (props: { title: string; onPress: () => void }) => {
   );
 };
 
-const scale = Platform.OS === 'ios' ? 2.0 : 1.0;
+const scale = Platform.OS === 'ios' && Platform.isTV ? 2.0 : 0.6;
 
 const backgroundColor = '#ecf0f1';
 
@@ -149,8 +149,9 @@ const styles = StyleSheet.create({
   },
   progressContainer: {
     backgroundColor,
+    alignSelf: 'center',
     flexDirection: 'row',
-    width: '100%',
+    width: '80%',
     height: 5 * scale,
     margin: 0,
   },
