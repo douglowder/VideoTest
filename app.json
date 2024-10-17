@@ -5,6 +5,7 @@
         "@react-native-tvos/config-tv",
         {
           "androidTVBanner": "./assets/images/icon-400x240.png",
+          "androidTVIcon": "./assets/images/icon-480x480.png",
           "appleTVImages": {
             "icon": "./assets/images/icon-1280x768.png",
             "iconSmall": "./assets/images/icon-400x240.png",
