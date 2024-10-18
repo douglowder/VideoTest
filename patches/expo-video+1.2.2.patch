@@ -1,0 +1,39 @@
+diff --git a/node_modules/expo-video/android/src/main/java/expo/modules/video/VideoView.kt b/node_modules/expo-video/android/src/main/java/expo/modules/video/VideoView.kt
+index 2d046c7..de1320b 100644
+--- a/node_modules/expo-video/android/src/main/java/expo/modules/video/VideoView.kt
++++ b/node_modules/expo-video/android/src/main/java/expo/modules/video/VideoView.kt
+@@ -17,7 +17,7 @@ import androidx.media3.ui.PlayerView
+ import com.facebook.react.modules.i18nmanager.I18nUtil
+ import com.facebook.react.uimanager.PixelUtil
+ import com.facebook.react.uimanager.Spacing
+-import com.facebook.react.views.view.ReactViewBackgroundDrawable
++import com.facebook.react.uimanager.drawable.CSSBackgroundDrawable
+ import com.facebook.yoga.YogaConstants
+ import expo.modules.kotlin.AppContext
+ import expo.modules.kotlin.exception.Exceptions
+@@ -53,7 +53,7 @@ class VideoView(context: Context, appContext: AppContext) : ExpoView(context, ap
+   private val outlineProvider = OutlineProvider(context)
+ 
+   private val borderDrawableLazyHolder = lazy {
+-    ReactViewBackgroundDrawable(context).apply {
++    CSSBackgroundDrawable(context).apply {
+       callback = this@VideoView
+ 
+       outlineProvider.borderRadiiConfig
+@@ -285,14 +285,14 @@ class VideoView(context: Context, appContext: AppContext) : ExpoView(context, ap
+ 
+     // Draw borders on top of the video
+     if (borderDrawableLazyHolder.isInitialized()) {
+-      val layoutDirection = if (I18nUtil.getInstance().isRTL(context)) {
++      val newLayoutDirection = if (I18nUtil.getInstance().isRTL(context)) {
+         LAYOUT_DIRECTION_RTL
+       } else {
+         LAYOUT_DIRECTION_LTR
+       }
+ 
+       borderDrawable.apply {
+-        resolvedLayoutDirection = layoutDirection
++        layoutDirection = newLayoutDirection
+         setBounds(0, 0, width, height)
+         draw(canvas)
+       }
